@@ -1,0 +1,22 @@
+storage:
+  type: mongodb
+  uri: mongodb://powersync:powersync@mongo:27017/demo?replicaSet=rs0&authSource=demo
+
+client_auth:
+  jwks_uri: http://api:3000/.well-known/jwks.json
+  audience: "powersync-demo"
+
+data:
+  rules: |
+    bucket_definitions:
+      user_tasks:
+        parameters:
+          - tenantId
+        data:
+          - tasks:
+              filters:
+                - tenantId == :tenantId
+
+    bucket_assignments:
+      user_tasks:
+        - token.parameters.tenantId

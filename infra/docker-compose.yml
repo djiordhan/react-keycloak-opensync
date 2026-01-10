@@ -1,0 +1,111 @@
+version: '3.8'
+
+services:
+  mongo:
+    image: mongo:6.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=password
+    volumes:
+      - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
+      - mongo_data:/data/db
+    networks:
+      - demo-net
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "rs.status().ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0
+    command: start-dev --import-realm
+    environment:
+      - KC_BOOTSTRAP_ADMIN_USERNAME=admin
+      - KC_BOOTSTRAP_ADMIN_PASSWORD=admin
+      - KC_HOSTNAME=localhost
+      - KC_HOSTNAME_PORT=8080
+      - KC_HOSTNAME_STRICT_BACKCHANNEL=false
+      - KC_HTTP_ENABLED=true
+      - KC_HEALTH_ENABLED=true
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm.json:ro
+    ports:
+      - "8080:8080"
+    networks:
+      - demo-net
+    depends_on:
+      - mongo
+
+  api:
+    build:
+      context: ../apps/api
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - MONGO_URI=mongodb://root:password@mongo:27017/demo?authSource=admin
+      - KEYCLOAK_ISSUER=http://localhost:8080/realms/demo
+      - KEYCLOAK_JWKS_URI=http://keycloak:8080/realms/demo/protocol/openid-connect/certs
+      - POWERSYNC_PRIVATE_KEY_PATH=/app/keys/private.key
+      - POWERSYNC_AUDIENCE=powersync-demo
+      - POWERSYNC_URL=http://localhost:8090
+    volumes:
+      - ../apps/api:/app
+      - /app/node_modules
+      - ./keys:/app/keys:ro
+    networks:
+      - demo-net
+    depends_on:
+      mongo:
+        condition: service_healthy
+      keycloak:
+        condition: service_started
+
+  web:
+    build:
+      context: ../apps/web
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:3000
+      - VITE_KEYCLOAK_URL=http://localhost:8080
+      - VITE_KEYCLOAK_REALM=demo
+      - VITE_KEYCLOAK_CLIENT_ID=demo-web
+      - VITE_POWERSYNC_URL=http://localhost:8090
+    volumes:
+      - ../apps/web:/app
+      - /app/node_modules
+    networks:
+      - demo-net
+    depends_on:
+      api:
+        condition: service_started
+
+  powersync:
+    image: journeysystems/powersync-service:latest
+    ports:
+      - "8090:8080"
+    environment:
+      - PS_CONFIG_FILE=/config/config.yaml
+    volumes:
+      - ./powersync/config.yaml:/config/config.yaml:ro
+    networks:
+      - demo-net
+    depends_on:
+      api:
+        condition: service_started
+      mongo:
+        condition: service_healthy
+
+networks:
+  demo-net:
+
+volumes:
+  mongo_data:

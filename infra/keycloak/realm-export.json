@@ -1,0 +1,54 @@
+{
+  "realm": "demo",
+  "enabled": true,
+  "users": [
+    {
+      "username": "demo@demo.com",
+      "email": "demo@demo.com",
+      "enabled": true,
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "demo"
+        }
+      ],
+      "attributes": {
+        "tenantId": "tenant-demo"
+      }
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "demo-web",
+      "enabled": true,
+      "publicClient": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["*"],
+      "webOrigins": ["*"],
+      "protocol": "openid-connect",
+      "protocolMappers": [
+        {
+          "name": "tenantId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "tenantId",
+            "claim.name": "tenantId",
+            "jsonType.label": "String",
+            "id.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "demo-api",
+      "enabled": true,
+      "bearerOnly": false,
+      "publicClient": false,
+      "protocol": "openid-connect"
+    }
+  ]
+}
