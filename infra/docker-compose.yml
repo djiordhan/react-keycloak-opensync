@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   mongo:
@@ -89,7 +88,7 @@ services:
         condition: service_started
 
   powersync:
-    image: journeysystems/powersync-service:latest
+    image: journeyapps/powersync-service:latest
     ports:
       - "8090:8080"
     environment:
