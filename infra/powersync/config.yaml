@@ -4,7 +4,7 @@ storage:
 
 client_auth:
   jwks_uri: http://api:3000/.well-known/jwks.json
-  audience: "powersync-demo"
+  audience: ["powersync-demo"]
 
 data:
   rules: |

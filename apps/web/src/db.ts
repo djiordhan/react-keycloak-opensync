@@ -44,7 +44,16 @@ export class Connector {
     };
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/powersync/credentials`, { headers });
     if (!res.ok) throw new Error(`Failed to get credentials: ${res.statusText}`);
-    const data = await res.json();
+    const text = await res.text();
+    if (!text) throw new Error("Empty response from credentials endpoint");
+    
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch(e) {
+       throw new Error(`Failed to parse credentials JSON: ${text.substring(0, 100)}...`);
+    }
+
     return {
       endpoint: data.endpoint,
       token: data.token
@@ -100,9 +109,7 @@ export const getDb = (): PowerSyncDatabase => {
   if (!dbInstance) {
     dbInstance = new PowerSyncDatabase({
       schema: AppSchema,
-      database: {
-        name: 'tasks_db_demo'
-      }
+      database: 'tasks_db_demo.db'
     });
   }
   return dbInstance;
