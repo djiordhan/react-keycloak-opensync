@@ -1,6 +1,6 @@
 storage:
   type: mongodb
-  uri: mongodb://powersync:powersync@mongo:27017/demo?replicaSet=rs0&authSource=demo
+  uri: mongodb://mongo:27017/demo?replicaSet=rs0
 
 client_auth:
   jwks_uri: http://api:3000/.well-known/jwks.json

@@ -5,9 +5,6 @@ services:
     command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
       - "27017:27017"
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=password
     volumes:
       - ./mongo/init.js:/docker-entrypoint-initdb.d/init.js:ro
       - mongo_data:/data/db
@@ -48,7 +45,7 @@ services:
     environment:
       - NODE_ENV=development
       - PORT=3000
-      - MONGO_URI=mongodb://root:password@mongo:27017/demo?authSource=admin
+      - MONGO_URI=mongodb://mongo:27017/demo
       - KEYCLOAK_ISSUER=http://localhost:8080/realms/demo
       - KEYCLOAK_JWKS_URI=http://keycloak:8080/realms/demo/protocol/openid-connect/certs
       - POWERSYNC_PRIVATE_KEY_PATH=/app/keys/private.key

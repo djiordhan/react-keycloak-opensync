@@ -4,16 +4,9 @@ try {
   print("RS already initiated or error: " + e);
 }
 
-db.getSiblingDB('admin').createUser({
-  user: 'root',
-  pwd: 'password',
-  roles: ['root']
-});
-
-db.getSiblingDB('demo').createUser({
-  user: 'powersync',
-  pwd: 'powersync',
-  roles: [{ role: 'readWrite', db: 'demo' }, { role: 'read', db: 'local' }] // needs local read for oplog
-});
-
-db.getSiblingDB('demo').createCollection('tasks');
+// Check if collection exists, if not create it to ensure DB is created
+let dbName = 'demo';
+let dbRef = db.getSiblingDB(dbName);
+if (!dbRef.getCollectionNames().includes('tasks')) {
+    dbRef.createCollection('tasks');
+}
