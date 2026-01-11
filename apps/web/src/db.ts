@@ -1,10 +1,11 @@
 import {
   AbstractPowerSyncDatabase,
+  Column,
   ColumnType,
   PowerSyncDatabase,
   Schema,
   Table,
-  UpdateType
+// ...
 } from '@powersync/web';
 // Note: WASM is handled by vite plugin logic or @powersync/web default requires some setup. 
 // We'll trust the package.
@@ -14,16 +15,19 @@ import { getToken, updateToken } from './auth';
 export const TASKS_TABLE = 'tasks';
 
 const tasks = new Table({
-  id: ColumnType.TEXT,
-  tenantId: ColumnType.TEXT,
-  title: ColumnType.TEXT,
-  done: ColumnType.INTEGER, // sqlite boolean is integer
-  updatedAt: ColumnType.TEXT
+  name: TASKS_TABLE,
+  columns: [
+    new Column({ name: 'id', type: ColumnType.TEXT }),
+    new Column({ name: 'tenantId', type: ColumnType.TEXT }),
+    new Column({ name: 'title', type: ColumnType.TEXT }),
+    new Column({ name: 'done', type: ColumnType.INTEGER }),
+    new Column({ name: 'updatedAt', type: ColumnType.TEXT })
+  ]
 });
 
-export const AppSchema = new Schema({
+export const AppSchema = new Schema([
   tasks
-});
+]);
 
 export type TaskRecord = {
   id: string;
@@ -109,7 +113,9 @@ export const getDb = (): PowerSyncDatabase => {
   if (!dbInstance) {
     dbInstance = new PowerSyncDatabase({
       schema: AppSchema,
-      database: 'tasks_db_demo.db'
+      database: {
+        dbFilename: 'tasks_db_demo.db'
+      }
     });
   }
   return dbInstance;
