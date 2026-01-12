@@ -1,0 +1,45 @@
+<div class="container" *ngIf="loggedIn; else loginTemplate">
+  <header class="header">
+    <h1>My Tasks</h1>
+    <button class="logout" type="button" (click)="logout()">Logout</button>
+  </header>
+
+  <section class="status-panel">
+    <h3>Status Panel</h3>
+    <div><strong>Network:</strong> {{ online ? 'Online' : 'Offline' }}</div>
+    <div><strong>PowerSync Connected:</strong> {{ status?.connected ? 'Yes' : 'No' }}</div>
+    <div>
+      <strong>Last Synced:</strong>
+      {{ status?.lastSyncedAt ? (status?.lastSyncedAt | date: 'shortTime') : 'Never' }}
+    </div>
+    <p class="status-hint">
+      To test offline: Stop the API container or disconnect network. You can still add/edit tasks.
+    </p>
+  </section>
+
+  <form class="task-form" (ngSubmit)="addTask()">
+    <input
+      type="text"
+      name="taskTitle"
+      [(ngModel)]="newTask"
+      placeholder="New Task..."
+      autocomplete="off"
+    />
+    <button type="submit">Add</button>
+  </form>
+
+  <ul class="task-list">
+    <li class="task-item" *ngFor="let task of tasks" [class.task-done]="task.done">
+      <input type="checkbox" [checked]="task.done" (change)="toggleTask(task)" />
+      <span class="task-title">{{ task.title }}</span>
+      <button class="delete" type="button" (click)="deleteTask(task.id)">x</button>
+    </li>
+  </ul>
+</div>
+
+<ng-template #loginTemplate>
+  <div class="login">
+    <h1>Offline-First Demo</h1>
+    <button type="button" (click)="login()">Login with Keycloak</button>
+  </div>
+</ng-template>
