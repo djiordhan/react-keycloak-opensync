@@ -84,12 +84,32 @@ services:
       api:
         condition: service_started
 
+  angular:
+    build:
+      context: ../apps/angular
+      dockerfile: Dockerfile
+    ports:
+      - "4200:4200"
+    environment:
+      - API_URL=http://localhost:3000
+      - KEYCLOAK_URL=http://localhost:8080
+      - KEYCLOAK_REALM=demo
+      - KEYCLOAK_CLIENT_ID=demo-web
+    volumes:
+      - ../apps/angular:/app
+      - /app/node_modules
+    networks:
+      - demo-net
+    depends_on:
+      api:
+        condition: service_started
+
   powersync:
     image: journeyapps/powersync-service:latest
     ports:
       - "8090:8080"
-    # environment:
-    #   - POWERSYNC_CONFIG_PATH=/config/config.yaml
+    environment:
+      - POWERSYNC_CONFIG_PATH=/app/powersync.yaml
     volumes:
       - ./powersync/config.yaml:/app/powersync.yaml:ro
     networks:
